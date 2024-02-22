@@ -1,21 +1,6 @@
-```                                                                                
-   ▄██▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀██▄  
-   █▀                                                                       ▀█  
-   █      ▀███   ▄       ▄▄   ██   ▄    T   ▄██▀▀▀▀ █▄   ██ ██ ██ ██▄   ▄██  █  
-   █       ██  ▄█▀█▄  ▄███▀█▄ ██▄██▀    H   ███▄▄▄  ███▄ ██ ██ ██ ████▄████  █  
-   █   ▄▄  ██ ▄█████▄ ███▄    ██▀█▄     E   ███▀▀   ██ ▀███ ██▄██ ███ ██ ██  █  
-   █  ███▄███ █▀  ▀█▀  ▀████▀ ▀█ ▀██        ▀██████ ▀█   ▀█ ▀███▀ ██▀    ██  █  
-   █   ▀▀▀▀▀       ▄▄▄▄▄▄      ▄▄▄▄▄▄   ▄▄▄▄▄▄   ▄▄▄▄▄▄▄  ▄▄▄▄▄▄             █  
-   █              ███▀▀███ ▄▄ ███▀▀███ ███▀▀███ ████▀▀▀  ███▀▀███            █  
-   █              ███ ▄█▀     ███▄▄██▀ ███▄▄██▀ ██████▀  ███ ▄█▀             █  
-   █              ███▀▀██▄ ██ ███▀▀    ███▀▀    ███      ███▀▀██▄            █  
-   █        ▄▄     ▀█  █▀▀▄█▀▄███▄    ▄███▄    ▄████████▄▀██   █▀   ▄▄       █  
-   █       ████▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄████      █  
-   ██▄      ▀▀                                                      ▀▀     ▄██  
-    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀   
- ```                                                        																				
+# ![Icon](.github/jacktheenumripper_48.png) Jack the Enum Ripper                                                      																				
 
-Jack the Enum Ripper is a versatile tool designed to extract enumeration definitions from .NET assemblies and output them in various formats. Crafted with precision in C#, this tool supports both .NET Framework 4.8 and .NET 8.0, ensuring broad compatibility across different .NET versions. Whether you're dealing with legacy systems or embracing the latest in .NET technology, Jack the Enum Ripper stands ready to facilitate your development workflow.
+Jack the Enum Ripper is a CLI tool designed to extract enums from .NET assemblies and output them in various formats. This tool supports both .NET Framework 4.8 and .NET 8.0.
 
 ## Features
 
@@ -23,19 +8,6 @@ Jack the Enum Ripper is a versatile tool designed to extract enumeration definit
 - **Output Formats**: Supports exporting enums into multiple formats, including C#, JSON, INI, PHP, and Rust, adhering to each language's conventions.
 
 ## Getting Started
-
-### Prerequisites
-
-- .NET Framework 4.8 SDK or .NET 8.0 SDK, depending on your target environment.
-- Visual Studio 2019 or newer (recommended for development).
-
-### Installation
-
-1. Clone the repository or download the source code.
-2. Open the solution in Visual Studio.
-3. Build the project for either .NET Framework 4.8 or .NET 8.0, according to your needs
-	3.1 Pay attention to the CPU - x86 can only decompile x86 assemblies and x64 can only decompile x64 assemblies
-4. The executable `JackTheEnumRipper.exe` will be generated in the respective `bin/Release` or `bin/Debug` directory.
 
 ### Usage
 
@@ -57,15 +29,31 @@ If no options are specified, the tool defaults to exporting enums in C# format.
 
 ### Example
 
-To extract enums from a .NET assembly named `MyAssembly.dll` and output them in JSON format, use:
+To extract enums from a .NET assembly named `MyExecutable.exe` and output them in JSON format, use:
 
 ```
-JackTheEnumRipper.exe path\to\MyAssembly.dll --json
+JackTheEnumRipper.exe path\to\MyExecutable.exe --json
 ```
 
-This will create a directory named `Enums.MyAssembly` in the same location as `JackTheEnumRipper.exe`, containing the extracted enums in JSON format.
+This will create a directory named `Enums.MyExecutable` in the same location as `JackTheEnumRipper.exe`, containing the extracted enums in JSON format.
 
 You can alternatively just drag and drop the assembly to the `JackTheEnumRipper.exe`
+
+## Building
+
+### Prerequisites
+
+- .NET Framework 4.8 SDK or .NET 8.0 SDK, depending on your target environment.
+- Visual Studio 2019 or newer (recommended for development).
+
+### Building
+
+1. Clone the repository or download the source code.
+2. Open the solution in Visual Studio.
+3. Build the project for either .NET Framework 4.8 or .NET 8.0, according to your needs
+	- Pay attention to the CPU - x86 can only decompile x86 assemblies and x64 can only decompile x64 assemblies
+4. The executable `JackTheEnumRipper.exe` will be generated in the respective `bin/Release` or `bin/Debug` directory.
+
 
 ## Contributing
 
@@ -74,3 +62,20 @@ Contributions are welcome! If you have suggestions for improvements, please fork
 ## License
 
 Jack the Enum Ripper is open-source software licensed under the MIT License. See the `LICENSE` file for more details.
+
+```                                                                                
+   ▄██▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀██▄  
+   █▀                                                                       ▀█  
+   █      ▀███   ▄       ▄▄   ██   ▄    T   ▄██▀▀▀▀ █▄   ██ ██ ██ ██▄   ▄██  █  
+   █       ██  ▄█▀█▄  ▄███▀█▄ ██▄██▀    H   ███▄▄▄  ███▄ ██ ██ ██ ████▄████  █  
+   █   ▄▄  ██ ▄█████▄ ███▄    ██▀█▄     E   ███▀▀   ██ ▀███ ██▄██ ███ ██ ██  █  
+   █  ███▄███ █▀  ▀█▀  ▀████▀ ▀█ ▀██        ▀██████ ▀█   ▀█ ▀███▀ ██▀    ██  █  
+   █   ▀▀▀▀▀       ▄▄▄▄▄▄      ▄▄▄▄▄▄   ▄▄▄▄▄▄   ▄▄▄▄▄▄▄  ▄▄▄▄▄▄             █  
+   █              ███▀▀███ ▄▄ ███▀▀███ ███▀▀███ ████▀▀▀  ███▀▀███            █  
+   █              ███ ▄█▀     ███▄▄██▀ ███▄▄██▀ ██████▀  ███ ▄█▀             █  
+   █              ███▀▀██▄ ██ ███▀▀    ███▀▀    ███      ███▀▀██▄            █  
+   █        ▄▄     ▀█  █▀▀▄█▀▄███▄    ▄███▄    ▄████████▄▀██   █▀   ▄▄       █  
+   █       ████▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄████      █  
+   ██▄      ▀▀                                                      ▀▀     ▄██  
+    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀   
+ ```
