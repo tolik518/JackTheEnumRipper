@@ -4,6 +4,12 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net8.0;net481</TargetFrameworks>
     <Platforms>AnyCPU;x86;x64</Platforms>
+    <StartupObject>Program</StartupObject>
+    <ApplicationIcon>jacktheenumripper_icon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="jacktheenumripper_icon.ico" />
+  </ItemGroup>
 
 </Project>
