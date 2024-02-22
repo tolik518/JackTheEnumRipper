@@ -2,7 +2,7 @@
   "profiles": {
     "JackTheEnumRipper": {
       "commandName": "Project",
-      "commandLineArgs": "\"I:\\Code\\CS\\Projects\\SoG_SGreader\\SoG_SGreader\\bin\\Release\\SoG_SGreader.exe\" --php"
+      "commandLineArgs": ""
     }
   }
 }
