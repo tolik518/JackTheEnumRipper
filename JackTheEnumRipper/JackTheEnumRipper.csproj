@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net8.0;net481</TargetFrameworks>
+    <Platforms>AnyCPU;x86;x64</Platforms>
+  </PropertyGroup>
+
+</Project>
