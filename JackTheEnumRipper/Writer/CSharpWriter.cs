@@ -9,7 +9,7 @@ class CSharpWriter : IEnumWriter
     {
         _outputDir = outputDir;
     }
-     
+
     public void WriteEnum(Type enumType, string fileName)
     {
         var filePath = Path.Combine(_outputDir, $"{fileName}.cs");

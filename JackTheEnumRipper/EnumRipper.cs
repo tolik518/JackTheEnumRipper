@@ -1,8 +1,7 @@
-﻿using System.Reflection;
-using System;
-using System.Linq;
+﻿using System;
 using System.IO;
-using System.Globalization;
+using System.Linq;
+using System.Reflection;
 
 class EnumRipper
 {
@@ -23,10 +22,12 @@ class EnumRipper
             foreach (Type type in assembly.GetTypes().Where(t => t.IsEnum))
             {
                 string fileName = "";
-                if (type.ReflectedType == null) { 
+                if (type.ReflectedType == null)
+                {
                     fileName = type.Name;
                 }
-                else { 
+                else
+                {
                     fileName = $"{type.ReflectedType}.{type.Name}";
                 }
 
