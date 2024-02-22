@@ -20,7 +20,7 @@ class Program
         // print the supported formats and exit, also useful when using with other tools
         if (args.Length == 1 && (args[0] == "--formats" || args[0] == "-f"))
         {
-            Console.WriteLine(GetAvailableWriters(prefix: false)); 
+            Console.WriteLine(GetAvailableWriters(prefix: false));
             return;
         }
 
@@ -43,6 +43,11 @@ class Program
             return;
         }
 
+        ReadAssemblyAndExtractEnums(args, assemblyPath);
+    }
+
+    private static void ReadAssemblyAndExtractEnums(string[] args, string assemblyPath)
+    {
         try
         {
             var assembly = Assembly.LoadFrom(assemblyPath);
