@@ -1,9 +1,11 @@
-<p align="center">
-#  Jack the Enum Ripper                                                      																				
-<img src="https://github.com/tolik518/JackTheEnumRipper/assets/3026792/2bd482c4-ef87-40fd-aa16-57c87af617de">
-</p>
+<h1 align="center">Jack the Enum Ripper</h1>
 
-Jack the Enum Ripper is a CLI tool designed to extract enums from .NET assemblies and output them in various formats. This tool supports both .NET Framework 4.8 and .NET 8.0.
+<p align="center">    
+	<img src="https://github.com/tolik518/JackTheEnumRipper/assets/3026792/2bd482c4-ef87-40fd-aa16-57c87af617de">    
+</p>	  
+<p align="center">    
+	Jack the Enum Ripper is a CLI tool designed to extract enums from .NET assemblies and output them in various formats. This tool supports both .NET Framework 4.8 and .NET 8.0.
+</p>
 
 ## Features
 
