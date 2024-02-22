@@ -51,6 +51,5 @@ class CSharpWriter : IEnumWriter
     private void FinalizeWrite(StreamWriter file)
     {
         file.WriteLine("};");
-        // No need to explicitly dispose of the StreamWriter here due to the 'using' statement
     }
 }

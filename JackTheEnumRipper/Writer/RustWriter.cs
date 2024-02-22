@@ -42,14 +42,14 @@ class RustWriter : IEnumWriter
 
     private void WriteVariant(StreamWriter file, string name, object value)
     {
-        // In Rust, enum variants are typically just names, but you can attach values in various ways
+        // In Rust, enum variants are typically just names, but one can attach values in various ways
         // Here we're assuming a simple enum without attaching data to variants directly
         file.WriteLine($"    {name} = {value},");
     }
 
     private string ConvertToPascalCase(string input)
     {
-        // Simple conversion to PascalCase for demonstration; consider edge cases and improvements
+        // Simple conversion to PascalCase for now; I should consider edge cases and improvements
         return string.Concat(input.Split(new char[] { '_', ' ' }, StringSplitOptions.RemoveEmptyEntries)
                                   .Select(word => char.ToUpper(word[0]) + word.Substring(1).ToLower()));
     }

@@ -45,7 +45,7 @@ class PhpWriter : IEnumWriter
 
     private string ConvertToPascalCase(string input)
     {
-        // Simple conversion to PascalCase for demonstration; consider edge cases and improvements
+        // Simple conversion to PascalCase for now; I should consider edge cases and improvements
         return string.Concat(input.Split(new char[] { '_', ' ' }, StringSplitOptions.RemoveEmptyEntries)
                                   .Select(word => char.ToUpper(word[0]) + word.Substring(1).ToLower()));
     }

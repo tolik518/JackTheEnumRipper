@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Reflection;
 using System;
+using System.Globalization;
+using System.Collections.Generic;
 
 class Program
 {
@@ -18,7 +20,7 @@ class Program
         // print the supported formats and exit, also useful when using with other tools
         if (args.Length == 1 && (args[0] == "--formats" || args[0] == "-f"))
         {
-            Console.WriteLine("csharp, json, ini, php, rust");
+            Console.WriteLine(GetAvailableWriters(prefix: false)); 
             return;
         }
 
@@ -28,7 +30,7 @@ class Program
         if (args.Length == 0 || args.Contains("--help") || args.Contains("-h"))
         {
             Console.WriteLine("Usage: JackTheEnumRipper <assembly> <format>");
-            Console.WriteLine("  <format>: The output format. Supported formats: --csharp, --json, --ini, --php, --rust");
+            Console.WriteLine("  <format>: The output format. Supported formats: " + GetAvailableWriters(prefix: true));
             Console.ReadLine();
             return;
         }
@@ -52,7 +54,7 @@ class Program
             // get the format from the command line and remove the -- prefix
             string format = args.Skip(1).FirstOrDefault()?.TrimStart('-') ?? "csharp";
 
-            IEnumWriter writer = WriterFactory.GetWriter(format, outputDir);
+            IEnumWriter writer = GetWriterForFormat(format, outputDir);
             var ripper = new EnumRipper(writer);
             ripper.ExtractEnumsFromAssembly(assemblyPath);
             Console.WriteLine($"Operation completed");
@@ -77,6 +79,35 @@ class Program
             Console.ReadLine();
         }
     }
+
+    private static IEnumWriter GetWriterForFormat(string format, string outputDir)
+    {
+        var writerTypeName = $"{CultureInfo.CurrentCulture.TextInfo.ToTitleCase(format)}Writer";
+        var writerType = Assembly.GetExecutingAssembly().GetTypes()
+            .FirstOrDefault(t => typeof(IEnumWriter).IsAssignableFrom(t) && !t.IsInterface && t.Name.Equals(writerTypeName, StringComparison.OrdinalIgnoreCase));
+
+        if (writerType != null)
+        {
+            return (IEnumWriter) Activator.CreateInstance(writerType, new object[] { outputDir });
+        }
+
+        return null;
+    }
+
+    private static string GetAvailableWriters(bool prefix)
+    {
+        var writers = Assembly.GetExecutingAssembly().GetTypes()
+            .Where(t => typeof(IEnumWriter).IsAssignableFrom(t) && !t.IsInterface)
+            .Select(t => t.Name.Replace("Writer", "").ToLower());
+
+        if (prefix)
+        {
+            return writers.Select(f => $"--{f}").Aggregate((a, b) => $"{a}, {b}");
+        }
+
+        return writers.Aggregate((a, b) => $"{a}, {b}");
+    }
+
 
     private static void PrintBanner()
     {
