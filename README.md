@@ -1,4 +1,4 @@
-                                                                                
+```                                                                                
    ▄██▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀██▄  
    █▀                                                                       ▀█  
    █      ▀███   ▄       ▄▄   ██   ▄    T   ▄██▀▀▀▀ █▄   ██ ██ ▐█ ██▄   ▄██  █  
@@ -13,8 +13,7 @@
    █       ████▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄████      █  
    ██▄      ▀▀                                                      ▀▀     ▄██  
     ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀   
-                                                                                
-																				
+ ```                                                        																				
 
 Jack the Enum Ripper is a versatile tool designed to extract enumeration definitions from .NET assemblies and output them in various formats. Crafted with precision in C#, this tool supports both .NET Framework 4.8 and .NET 8.0, ensuring broad compatibility across different .NET versions. Whether you're dealing with legacy systems or embracing the latest in .NET technology, Jack the Enum Ripper stands ready to facilitate your development workflow.
 
