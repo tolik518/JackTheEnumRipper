@@ -52,21 +52,26 @@ class Program
             IEnumWriter writer = WriterFactory.GetWriter(format, outputDir);
             var ripper = new EnumRipper(writer);
             ripper.ExtractEnumsFromAssembly(assemblyPath);
+            Console.WriteLine($"Operation completed");
+            Console.ReadLine();
         }
         catch (BadImageFormatException ex)
         {
             Console.WriteLine("The assembly cannot be loaded, likely due to a bitness (32bit vs 64bit) mismatch or it's not a .NET assembly.");
             Console.WriteLine(ex.Message);
+            Console.ReadLine();
         }
         catch (FileNotFoundException ex)
         {
             Console.WriteLine("The specified assembly was not found.");
             Console.WriteLine(ex.Message);
+            Console.ReadLine();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading assembly.");
             Console.WriteLine($"{ex.GetType()}: {ex.Message}");
+            Console.ReadLine();
         }
     }
 }

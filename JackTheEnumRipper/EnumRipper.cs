@@ -31,23 +31,25 @@ class EnumRipper
 
                 _writer.WriteEnum(type, fileName);
                 Console.WriteLine($"Enum: {fileName}");
-
             }
         }
         catch (BadImageFormatException ex)
         {
             Console.WriteLine("The assembly cannot be loaded, likely due to a bitness (32bit vs 64bit) mismatch or it's not a .NET assembly.");
             Console.WriteLine(ex.Message);
+            Console.ReadLine();
         }
         catch (FileNotFoundException ex)
         {
             Console.WriteLine("The specified assembly was not found.");
             Console.WriteLine(ex.Message);
+            Console.ReadLine();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading assembly.");
             Console.WriteLine($"{ex.GetType()}: {ex.Message}");
+            Console.ReadLine();
         }
     }
 }
