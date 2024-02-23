@@ -12,7 +12,7 @@ class EnumRipper
         _writer = writer;
     }
 
-    public void ExtractEnumsFromAssembly(string assemblyPath)
+    public void ExtractEnumsFromAssembly(string outputDir, string assemblyPath)
     {
         try
         {
@@ -21,16 +21,11 @@ class EnumRipper
 
             foreach (Type type in assembly.GetTypes().Where(t => t.IsEnum))
             {
-                string fileName = "";
-                if (type.ReflectedType == null)
-                {
-                    fileName = type.Name;
-                }
-                else
-                {
-                    fileName = $"{type.ReflectedType}.{type.Name}";
-                }
+                // replace the dots in the type.Name with solder separator to create a folder structure
+                var typeFolder = type.Name.Replace(".", Path.DirectorySeparatorChar.ToString());
 
+                string fileName = Path.Combine(type.Namespace, typeFolder);
+                    
                 _writer.WriteEnum(type, fileName);
                 Console.WriteLine($"Enum: {fileName}");
             }

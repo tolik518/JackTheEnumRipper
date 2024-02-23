@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -19,7 +20,7 @@ class Program
         // print the supported formats and exit, also useful when using with other tools
         if (args.Length == 1 && (args[0] == "--formats" || args[0] == "-f"))
         {
-            Console.WriteLine(GetAvailableWriters(prefix: false));
+            Console.WriteLine(GetAvailableWritersAsString(prefix: false));
             return;
         }
 
@@ -29,7 +30,7 @@ class Program
         if (args.Length == 0 || args.Contains("--help") || args.Contains("-h"))
         {
             Console.WriteLine("Usage: JackTheEnumRipper <assembly> <format>");
-            Console.WriteLine("  <format>: The output format. Supported formats: " + GetAvailableWriters(prefix: true));
+            Console.WriteLine("  <format>: The output format. Supported formats: " + GetAvailableWritersAsString(prefix: true));
             Console.ReadLine();
             return;
         }
@@ -55,12 +56,21 @@ class Program
             var outputDir = Path.Combine(path, $"Enums.{assemblyName}");
             Directory.CreateDirectory(outputDir); // Ensure the directory exists
 
-            // get the format from the command line and remove the -- prefix
-            string format = args.Skip(1).FirstOrDefault()?.TrimStart('-') ?? "csharp";
+            var format = "csharp";
+            // get the format from the command line, remove the -- prefix and see if its one of GetAvailableWriters
+            try
+            {
+                format = args.FirstOrDefault(a => a.StartsWith("--")).Replace("--", "");
+                Console.WriteLine($"Format set to: {format}");
+            }
+            catch (NullReferenceException)
+            {
+                Console.WriteLine("No format provided, defaulting to: csharp");
+            }
 
             IEnumWriter writer = GetWriterForFormat(format, outputDir);
             var ripper = new EnumRipper(writer);
-            ripper.ExtractEnumsFromAssembly(assemblyPath);
+            ripper.ExtractEnumsFromAssembly(outputDir,assemblyPath);
             Console.WriteLine($"Operation completed");
             Console.ReadLine();
         }
@@ -98,18 +108,21 @@ class Program
         return null;
     }
 
-    private static string GetAvailableWriters(bool prefix)
+    private static IEnumerable<string> GetAvailableWriters()
     {
-        var writers = Assembly.GetExecutingAssembly().GetTypes()
+        return Assembly.GetExecutingAssembly().GetTypes()
             .Where(t => typeof(IEnumWriter).IsAssignableFrom(t) && !t.IsInterface)
             .Select(t => t.Name.Replace("Writer", "").ToLower());
+    }
 
+    private static string GetAvailableWritersAsString(bool prefix)
+    {
         if (prefix)
         {
-            return writers.Select(f => $"--{f}").Aggregate((a, b) => $"{a}, {b}");
+            return GetAvailableWriters().Select(f => $"--{f}").Aggregate((a, b) => $"{a}, {b}");
         }
 
-        return writers.Aggregate((a, b) => $"{a}, {b}");
+        return GetAvailableWriters().Aggregate((a, b) => $"{a}, {b}");
     }
 
 
@@ -132,4 +145,8 @@ class Program
         Console.WriteLine("    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀   ");
         Console.WriteLine("                                                                                ");
     }
+}
+
+internal interface IEnumumerable<T>
+{
 }

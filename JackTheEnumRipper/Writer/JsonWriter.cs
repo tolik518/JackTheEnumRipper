@@ -13,6 +13,8 @@ class JsonWriter : IEnumWriter
     public void WriteEnum(Type enumType, string fileName)
     {
         var filePath = Path.Combine(_outputDir, $"{fileName}.json");
+        var fileDirectory = Path.GetDirectoryName(filePath);
+        Directory.CreateDirectory(fileDirectory);
 
         using (StreamWriter file = new StreamWriter(filePath))
         {

@@ -13,6 +13,8 @@ class CSharpWriter : IEnumWriter
     public void WriteEnum(Type enumType, string fileName)
     {
         var filePath = Path.Combine(_outputDir, $"{fileName}.cs");
+        var fileDirectory = Path.GetDirectoryName(filePath);
+        Directory.CreateDirectory(fileDirectory);
 
         using (StreamWriter file = new StreamWriter(filePath))
         {
