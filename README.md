@@ -9,7 +9,7 @@
 
 ## Features
 
-- **Dump Enums**: Load and analyze a .NET assembly (.exe or .dll) to dump all enumeration types.
+- **Dump Enums**: Load a .NET assembly (.exe or .dll) to dump all enumeration types.
 - **Output Formats**: Supports exporting enums into multiple formats, including C#, JSON, INI, PHP, and Rust, adhering to each language's conventions.
 
 ## Getting Started
