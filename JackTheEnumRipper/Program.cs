@@ -74,6 +74,7 @@ class Program
 
             var ripper = new EnumRipper(writer);
             ripper.ExtractEnumsFromAssembly(outputDir, assemblyPath);
+            Console.WriteLine($"Output directory: \"{outputDir}\"");
             Console.WriteLine("Operation completed");
             Console.ReadLine();
         }

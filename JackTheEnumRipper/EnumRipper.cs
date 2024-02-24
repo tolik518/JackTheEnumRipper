@@ -1,6 +1,8 @@
 ﻿using Mono.Cecil;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 class EnumRipper
 {
@@ -80,8 +82,25 @@ class EnumRipper
 
         var fileName = $"{enumType.Name}"; // Adjust if you are using different writers for different formats
         var fullPath = Path.Combine(folderPath, fileName);
+        var enumValues = GetEnumValues(enumType);
 
-        _writer.WriteEnum(enumType, fullPath); // Ensure WriteEnum accepts TypeDefinition
-        Console.WriteLine($"Enum: {typeNamespace}.{fileName}");
+        _writer.WriteEnum(enumType, enumValues, fullPath); // Ensure WriteEnum accepts TypeDefinition
+        Console.WriteLine($"Enum: {typeNamespace}\\{fileName}");
+    }
+
+    private IEnumerable<(string Name, object Value)> GetEnumValues(TypeDefinition enumType)
+    {
+        // First, determine the underlying type of the enum
+        var underlyingType = enumType.Fields.FirstOrDefault(f => f.Name.Equals("value__"))?.FieldType;
+        if (underlyingType == null)
+        {
+            yield break; // not sure if this is possible, but just in case
+        }
+
+        var fields = enumType.Fields.Where(f => f.IsStatic && f.HasConstant);
+        foreach (var field in fields)
+        {
+            yield return (field.Name, field.Constant);
+        }
     }
 }

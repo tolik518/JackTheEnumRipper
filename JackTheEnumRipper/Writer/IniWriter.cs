@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mono.Cecil;
+using System.Collections.Generic;
 using System.IO;
 
 class IniWriter : IEnumWriter
@@ -10,7 +11,7 @@ class IniWriter : IEnumWriter
         _outputDir = outputDir;
     }
 
-    public void WriteEnum(Type enumType, string fileName)
+    void IEnumWriter.WriteEnum(TypeDefinition enumType, IEnumerable<(string Name, object Value)> enumValues, string fileName)
     {
         var filePath = Path.Combine(_outputDir, $"{fileName}.ini");
         var fileDirectory = Path.GetDirectoryName(filePath);
@@ -21,12 +22,10 @@ class IniWriter : IEnumWriter
             // Write the section header for the enum
             file.WriteLine($"[{enumType.Name}]");
 
-            var values = Enum.GetValues(enumType);
-            for (int i = 0; i < values.Length; i++)
+            // Iterate over fields to get enum values
+            foreach (var enumField in enumValues)
             {
-                var value = values.GetValue(i);
-                var convertedValue = Convert.ChangeType(value, Enum.GetUnderlyingType(enumType));
-                WriteValue(file, value.ToString(), convertedValue);
+                WriteValue(file, enumField.Name, enumField.Value);
             }
         }
     }

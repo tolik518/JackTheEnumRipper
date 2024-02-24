@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mono.Cecil;
+using System.Collections.Generic;
 using System.IO;
 
 class JsonWriter : IEnumWriter
@@ -10,7 +11,7 @@ class JsonWriter : IEnumWriter
         _outputDir = outputDir;
     }
 
-    public void WriteEnum(Type enumType, string fileName)
+    void IEnumWriter.WriteEnum(TypeDefinition enumType, IEnumerable<(string Name, object Value)> enumValues, string fileName)
     {
         var filePath = Path.Combine(_outputDir, $"{fileName}.json");
         var fileDirectory = Path.GetDirectoryName(filePath);
@@ -18,29 +19,21 @@ class JsonWriter : IEnumWriter
 
         using (StreamWriter file = new StreamWriter(filePath))
         {
-            // Initialize the JSON structure
             file.WriteLine("{");
             file.WriteLine($"  \"{enumType.Name}\": {{");
 
-            var values = Enum.GetValues(enumType);
-            for (int i = 0; i < values.Length; i++)
+            foreach (var enumField in enumValues)
             {
-                var value = values.GetValue(i);
-                var convertedValue = Convert.ChangeType(value, Enum.GetUnderlyingType(enumType));
-                // Determine if this is the last value to decide whether to append a comma
-                bool isLast = i == values.Length - 1;
-                WriteValue(file, value.ToString(), convertedValue, isLast);
+                WriteValue(file, enumField.Name, enumField.Value);
             }
 
-            // Finalize the JSON structure
             file.WriteLine("  }");
             file.WriteLine("}");
         }
     }
 
-    private void WriteValue(StreamWriter file, string name, object value, bool isLast)
+    private void WriteValue(StreamWriter file, string name, object value)
     {
-        string comma = isLast ? "" : ",";
-        file.WriteLine($"    \"{name}\": {value}{comma}");
+        file.WriteLine($"    \"{name}\": {value},");
     }
 }
