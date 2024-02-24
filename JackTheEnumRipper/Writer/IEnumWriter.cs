@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Mono.Cecil;
 
 interface IEnumWriter
 {
-    void WriteEnum(Type enumType, string fileName);
+    void WriteEnum(TypeDefinition enumType, string fileName);
 }

@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Mono.Cecil;
+using System;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 
 class EnumRipper
 {
@@ -16,18 +15,15 @@ class EnumRipper
     {
         try
         {
-            Assembly assembly = Assembly.LoadFrom(assemblyPath);
+            AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(assemblyPath);
             Console.WriteLine($"Successfully loaded {assembly.FullName}");
 
-            foreach (Type type in assembly.GetTypes().Where(t => t.IsEnum))
+            foreach (var module in assembly.Modules)
             {
-                // replace the dots in the type.Name with solder separator to create a folder structure
-                var typeFolder = type.Name.Replace(".", Path.DirectorySeparatorChar.ToString());
-
-                string fileName = Path.Combine(type.Namespace, typeFolder);
-                    
-                _writer.WriteEnum(type, fileName);
-                Console.WriteLine($"Enum: {fileName}");
+                foreach (TypeDefinition type in module.Types)
+                {
+                    ProcessType(type, outputDir, null);
+                }
             }
         }
         catch (BadImageFormatException ex)
@@ -48,5 +44,44 @@ class EnumRipper
             Console.WriteLine($"{ex.GetType()}: {ex.Message}");
             Console.ReadLine();
         }
+    }
+
+    private void ProcessType(TypeDefinition type, string outputDir, string parentNamespace)
+    {
+        string typeNamespace = GetTypeNamespace(type, parentNamespace);
+
+        if (type.IsEnum)
+        {
+            WriteEnumToFile(type, outputDir, typeNamespace);
+        }
+
+        // Recursively process nested types
+        foreach (var nestedType in type.NestedTypes)
+        {
+            ProcessType(nestedType, outputDir, typeNamespace);
+        }
+    }
+
+    private string GetTypeNamespace(TypeDefinition type, string parentNamespace)
+    {
+        // Build the namespace from the parent if the type is nested, otherwise use the type's namespace
+        string namespacePath = type.IsNested
+            ? $"{parentNamespace}.{type.DeclaringType.Name}.{type.Name}"
+            : (!string.IsNullOrEmpty(type.Namespace) ? type.Namespace : parentNamespace);
+
+        return namespacePath?.Replace(".", Path.DirectorySeparatorChar.ToString());
+    }
+
+    private void WriteEnumToFile(TypeDefinition enumType, string outputDir, string typeNamespace)
+    {
+        // Construct the full path using the namespace (and possibly nested class names)
+        var folderPath = Path.Combine(outputDir, typeNamespace);
+        Directory.CreateDirectory(folderPath); // Ensure the directory exists
+
+        var fileName = $"{enumType.Name}"; // Adjust if you are using different writers for different formats
+        var fullPath = Path.Combine(folderPath, fileName);
+
+        _writer.WriteEnum(enumType, fullPath); // Ensure WriteEnum accepts TypeDefinition
+        Console.WriteLine($"Enum: {typeNamespace}.{fileName}");
     }
 }

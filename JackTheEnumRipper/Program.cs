@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Mono.Cecil;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 class Program
 {
@@ -39,56 +39,46 @@ class Program
         if (!File.Exists(assemblyPath))
         {
             Console.WriteLine($"File not found: {assemblyPath}");
-            Console.ReadLine();
             return;
         }
 
-        ReadAssemblyAndExtractEnums(args, assemblyPath);
+        string formatArg = args.Length > 1 ? args[1] : "--csharp"; // Default to csharp if no format is provided
+        if (!formatArg.StartsWith("--"))
+        {
+            Console.WriteLine("Invalid format. Use --format. Example: --csharp");
+            return;
+        }
+
+        string format = formatArg.Substring(2).ToLower();
+        ReadAssemblyAndExtractEnums(format, assemblyPath);
     }
 
-    private static void ReadAssemblyAndExtractEnums(string[] args, string assemblyPath)
+    private static void ReadAssemblyAndExtractEnums(string format, string assemblyPath)
     {
         try
         {
-            var assembly = Assembly.LoadFrom(assemblyPath);
-            var assemblyName = assembly.GetName().Name;
-            var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var outputDir = Path.Combine(path, $"Enums.{assemblyName}");
-            Directory.CreateDirectory(outputDir); // Ensure the directory exists
+            var assembly = AssemblyDefinition.ReadAssembly(assemblyPath);
+            var outputDir = Path.Combine(
+                Path.GetDirectoryName(assemblyPath),
+                $"Enums.{assembly.Name.Name}"
+            );
+            Directory.CreateDirectory(outputDir);
 
-            var format = "csharp";
-            // get the format from the command line, remove the -- prefix and see if its one of GetAvailableWriters
-            try
+            var writer = GetWriterForFormat(format, outputDir);
+            if (writer == null)
             {
-                format = args.FirstOrDefault(a => a.StartsWith("--")).Replace("--", "");
-                Console.WriteLine($"Format set to: {format}");
-            }
-            catch (NullReferenceException)
-            {
-                Console.WriteLine("No format provided, defaulting to: csharp");
+                Console.WriteLine($"No writer found for format: {format}");
+                Console.ReadLine();
+                return;
             }
 
-            IEnumWriter writer = GetWriterForFormat(format, outputDir);
             var ripper = new EnumRipper(writer);
-            ripper.ExtractEnumsFromAssembly(outputDir,assemblyPath);
-            Console.WriteLine($"Operation completed");
-            Console.ReadLine();
-        }
-        catch (BadImageFormatException ex)
-        {
-            Console.WriteLine("The assembly cannot be loaded, likely due to a bitness (32bit vs 64bit) mismatch or it's not a .NET assembly.");
-            Console.WriteLine(ex.Message);
-            Console.ReadLine();
-        }
-        catch (FileNotFoundException ex)
-        {
-            Console.WriteLine("The specified assembly was not found.");
-            Console.WriteLine(ex.Message);
+            ripper.ExtractEnumsFromAssembly(outputDir, assemblyPath);
+            Console.WriteLine("Operation completed");
             Console.ReadLine();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading assembly.");
             Console.WriteLine($"{ex.GetType()}: {ex.Message}");
             Console.ReadLine();
         }
@@ -97,20 +87,22 @@ class Program
     private static IEnumWriter GetWriterForFormat(string format, string outputDir)
     {
         var writerTypeName = $"{CultureInfo.CurrentCulture.TextInfo.ToTitleCase(format)}Writer";
-        var writerType = Assembly.GetExecutingAssembly().GetTypes()
+        var writerType = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(a => a.GetTypes())
             .FirstOrDefault(t => typeof(IEnumWriter).IsAssignableFrom(t) && !t.IsInterface && t.Name.Equals(writerTypeName, StringComparison.OrdinalIgnoreCase));
 
-        if (writerType != null)
+        if (writerType == null)
         {
-            return (IEnumWriter)Activator.CreateInstance(writerType, new object[] { outputDir });
+            return null;
         }
 
-        return null;
+        return (IEnumWriter)Activator.CreateInstance(writerType, new object[] { outputDir });
     }
 
     private static IEnumerable<string> GetAvailableWriters()
     {
-        return Assembly.GetExecutingAssembly().GetTypes()
+        return AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(a => a.GetTypes())
             .Where(t => typeof(IEnumWriter).IsAssignableFrom(t) && !t.IsInterface)
             .Select(t => t.Name.Replace("Writer", "").ToLower());
     }
@@ -118,11 +110,11 @@ class Program
     private static string GetAvailableWritersAsString(bool prefix)
     {
         if (prefix)
-        {
-            return GetAvailableWriters().Select(f => $"--{f}").Aggregate((a, b) => $"{a}, {b}");
-        }
 
-        return GetAvailableWriters().Aggregate((a, b) => $"{a}, {b}");
+        {
+            return string.Join(", ", GetAvailableWriters().Select(f => $"--{f}"));
+        }
+        return string.Join(", ", GetAvailableWriters());
     }
 
 
@@ -145,8 +137,4 @@ class Program
         Console.WriteLine("    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀   ");
         Console.WriteLine("                                                                                ");
     }
-}
-
-internal interface IEnumumerable<T>
-{
 }
