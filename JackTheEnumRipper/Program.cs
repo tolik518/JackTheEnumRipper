@@ -7,7 +7,7 @@ using System.Linq;
 
 class Program
 {
-    private static string version = "1.0.0";
+    private static string version = "1.1.0";
     static void Main(string[] args)
     {
         // print the version and exit - could be useful when using with other tools
