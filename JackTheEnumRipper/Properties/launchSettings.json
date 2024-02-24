@@ -2,7 +2,7 @@
   "profiles": {
     "JackTheEnumRipper": {
       "commandName": "Project",
-      "commandLineArgs": "--help\r\n"
+      "commandLineArgs": "--help"
     }
   }
 }
