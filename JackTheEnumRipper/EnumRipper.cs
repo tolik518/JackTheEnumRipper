@@ -78,13 +78,13 @@ class EnumRipper
     {
         // Construct the full path using the namespace (and possibly nested class names)
         var folderPath = Path.Combine(outputDir, typeNamespace);
-        Directory.CreateDirectory(folderPath); // Ensure the directory exists
+        Directory.CreateDirectory(folderPath); 
 
-        var fileName = $"{enumType.Name}"; // Adjust if you are using different writers for different formats
+        var fileName = $"{enumType.Name}"; 
         var fullPath = Path.Combine(folderPath, fileName);
         var enumValues = GetEnumValues(enumType);
 
-        _writer.WriteEnum(enumType, enumValues, fullPath); // Ensure WriteEnum accepts TypeDefinition
+        _writer.WriteEnum(enumType, enumValues, fullPath);
         Console.WriteLine($"Enum: {typeNamespace}\\{fileName}");
     }
 
