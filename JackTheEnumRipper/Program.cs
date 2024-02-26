@@ -80,6 +80,7 @@ class Program
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"No access to given file or the file is not written using .Net");
             Console.WriteLine($"{ex.GetType()}: {ex.Message}");
             Console.ReadLine();
         }

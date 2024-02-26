@@ -28,21 +28,8 @@ class EnumRipper
                 }
             }
         }
-        catch (BadImageFormatException ex)
-        {
-            Console.WriteLine("The assembly cannot be loaded, likely due to a bitness (32bit vs 64bit) mismatch or it's not a .NET assembly.");
-            Console.WriteLine(ex.Message);
-            Console.ReadLine();
-        }
-        catch (FileNotFoundException ex)
-        {
-            Console.WriteLine("The specified assembly was not found.");
-            Console.WriteLine(ex.Message);
-            Console.ReadLine();
-        }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading assembly.");
             Console.WriteLine($"{ex.GetType()}: {ex.Message}");
             Console.ReadLine();
         }
@@ -66,10 +53,15 @@ class EnumRipper
 
     private string GetTypeNamespace(TypeDefinition type, string parentNamespace)
     {
-        // Build the namespace from the parent if the type is nested, otherwise use the type's namespace
-        string namespacePath = type.IsNested
-            ? $"{parentNamespace}.{type.DeclaringType.Name}.{type.Name}"
-            : (!string.IsNullOrEmpty(type.Namespace) ? type.Namespace : parentNamespace);
+        string namespacePath;
+        if (type.IsNested) // Build the namespace from the parent if the type is nested, otherwise use the type's namespace
+        {
+            namespacePath = $"{parentNamespace}.{type.DeclaringType.Name}.{type.Name}";
+        }
+        else
+        {
+            namespacePath = (!string.IsNullOrEmpty(type.Namespace) ? type.Namespace : parentNamespace);
+        }
 
         return namespacePath?.Replace(".", Path.DirectorySeparatorChar.ToString());
     }
@@ -85,7 +77,7 @@ class EnumRipper
         var enumValues = GetEnumValues(enumType);
 
         _writer.WriteEnum(enumType, enumValues, fullPath);
-        Console.WriteLine($"Enum: {typeNamespace}\\{fileName}");
+        Console.WriteLine($"Enum: {typeNamespace}{Path.DirectorySeparatorChar}{fileName}");
     }
 
     private IEnumerable<(string Name, object Value)> GetEnumValues(TypeDefinition enumType)
