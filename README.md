@@ -33,6 +33,7 @@ Run `JackTheEnumRipper.exe` from the command line with the following syntax:
 ```
 JackTheEnumRipper.exe <path_to_assembly> [format]
 ```
+_if you have compatibility issues, you can alternatively run JackTheEnumRipper_net481.exe_
 
 #### Formats
 
