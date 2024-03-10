@@ -2,7 +2,7 @@
   "profiles": {
     "JackTheEnumRipper": {
       "commandName": "Project",
-      "commandLineArgs": "format ini"
+      "commandLineArgs": "export --format ini2"
     }
   }
 }

@@ -1,133 +1,125 @@
-﻿using Mono.Cecil;
-using System;
-using System.Globalization;
-using System.IO;
-using System.Linq;
+﻿using System;
+
+using JackTheEnumRipper.Core;
+using JackTheEnumRipper.Interfaces;
 
 using McMaster.Extensions.CommandLineUtils;
-using System.Reflection;
-using System.Collections.Generic;
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
+
+using NLog;
+using NLog.Extensions.Logging;
+
+using ILogger = NLog.Logger;
 
 namespace JackTheEnumRipper
 {
     public class Program
     {
-        public static int Main(string[] args)
-        {
-            var assembly = Assembly.GetExecutingAssembly();
+        private readonly ILogger? _logger;
 
-            var app = new CommandLineApplication
+        private readonly IHostEnvironment _environment;
+
+        private readonly IServiceProvider? _serviceProvider;
+
+        private readonly IConfigurationRoot? _configurationRoot;
+
+        Program()
+        {
+            this._environment = new HostingEnvironment
             {
-                Name = assembly.GetName().Name,
-                Description = assembly.GetAttribute<AssemblyDescriptionAttribute>()?.Description,
+                ApplicationName = Project.Name,
+                EnvironmentName = Project.CompileTimeEnvironment,
+                ContentRootPath = Project.BasePath
             };
 
-            app.HelpOption(inherited: true);
-            var version = app.Option("-v|--version", "display program version and exit", CommandOptionType.NoValue);
+            this._configurationRoot = new ConfigurationBuilder()
+                .ConfigureAppBuilder(this._environment)
+                .Build();
 
-            app.Command("format", exportCommand =>
-            {
-                exportCommand.Description = "provide one or more export format";
-                var listOption = exportCommand.Option("--list", "list all available export formats and exit", CommandOptionType.NoValue);
-                var formatArguments = exportCommand.Argument("writer", "the name of a format writer", multipleValues: true);
+            this._serviceProvider = new ServiceCollection()
+                .ConfigureAppServices(this._environment, this._configurationRoot)
+                .BuildServiceProvider();
 
-                exportCommand.OnExecute(() =>
-                {
-                    if (listOption.HasValue())
-                    {
-                        IEnumerable<string> availableFormats = Utils.GetAvailableFormats();
-                        Console.WriteLine(string.Join(",", availableFormats));
-                        Environment.Exit(0);
-                    }
-
-
-                    IReadOnlyList<string?> values = formatArguments.Values.Any() ? formatArguments.Values : [ "csharp" ];
-
-                    foreach (var arg in formatArguments.Values)
-                    {
-                        Console.WriteLine(arg);
-                    }
-                });
-            });
-
-            app.OnExecute(() =>
-            {
-                if (version.HasValue())
-                {
-                    Console.WriteLine($"{app.Name}, version {assembly.GetName().Version}");
-                }
-                else
-                {
-                    app.ShowHelp();
-                }
-            });
-
-            return app.Execute(args);
-
-            //string assemblyPath = args[0];
-            //if (!File.Exists(assemblyPath))
-            //{
-            //    Console.WriteLine($"File not found: {assemblyPath}");
-            //    return;
-            //}
-
-            //string formatArg = args.Length > 1 ? args[1] : "--csharp"; // Default to csharp if no exportCommand is provided
-            //if (!formatArg.StartsWith("--"))
-            //{
-            //    Console.WriteLine("Invalid exportCommand. Use --exportCommand. Example: --csharp");
-            //    return;
-            //}
-
-            //string exportCommand = formatArg.Substring(2).ToLower();
-            //ReadAssemblyAndExtractEnums(exportCommand, assemblyPath);
+            LogManager.Configuration = new NLogLoggingConfiguration(this._configurationRoot.GetSection("NLog"));
+            this._logger = LogManager.GetCurrentClassLogger();
         }
 
-        private static void ReadAssemblyAndExtractEnums(string format, string assemblyPath)
+        public static void Main(string[] args)
+        {
+            var app = new Program();
+            app.Run(args);
+        }
+
+        public void Run(string[] args)
         {
             try
             {
-                var assembly = AssemblyDefinition.ReadAssembly(assemblyPath);
-                var outputDir = Path.Combine(
-                    Path.GetDirectoryName(assemblyPath),
-                    $"Enums.{assembly.Name.Name}"
-                );
-                Directory.CreateDirectory(outputDir);
-
-                var writer = GetWriterForFormat(format, outputDir);
-                if (writer == null)
+                var cli = new CommandLineApplication
                 {
-                    Console.WriteLine($"No writer found for format: {format}");
-                    Console.ReadLine();
-                    return;
-                }
+                    Name = Project.Name,
+                    Description = Project.Description,
+                };
 
-                var ripper = new EnumRipper(writer);
-                ripper.ExtractEnumsFromAssembly(outputDir, assemblyPath);
-                Console.WriteLine($"Output directory: \"{outputDir}\"");
-                Console.WriteLine("Operation completed");
-                Console.ReadLine();
+                cli.HelpOption(inherited: true);
+                var version = cli.Option("-v|--version", "display program version and exit", CommandOptionType.NoValue);
+
+                cli.Command("export", exportCommand =>
+                {
+                    exportCommand.Description = "provide one or more export format";
+                    var listOption = exportCommand.Option("--list", "list all available export formats and exit", CommandOptionType.NoValue);
+                    var formatOption = exportCommand.Option("--format", "the name of a format writer", CommandOptionType.SingleValue);
+
+                    exportCommand.OnExecute(() =>
+                    {
+                        if (listOption.HasValue())
+                        {
+                            var serializerService = this._serviceProvider?.GetService<ISerializerService>();
+                            var availableFormats = serializerService?.GetAvailableFormats();
+                            Console.WriteLine(string.Join(",", availableFormats!));
+                            Environment.Exit(0);
+                        }
+
+                        if (formatOption.HasValue())
+                        {
+                            string format = formatOption.Value()!;
+
+                            var serializerService = this._serviceProvider?.GetService<ISerializerService>();
+                            serializerService?.Export(format);
+                        }
+                    });
+                });
+
+                cli.OnExecute(() =>
+                {
+                    if (version.HasValue())
+                    {
+                        Console.WriteLine($"{cli.Name}, version {Project.Version}");
+                    }
+                    else
+                    {
+                        cli.ShowHelp();
+                    }
+                });
+
+                _ = cli.Execute(args);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException)
             {
-                Console.WriteLine($"No access to given file or the file is not written using .Net");
-                Console.WriteLine($"{ex.GetType()}: {ex.Message}");
-                Console.ReadLine();
+                Console.Error.WriteLine("invalid arguments");
             }
-        }
-
-        private static IEnumWriter GetWriterForFormat(string format, string outputDir)
-        {
-            var writerTypeName = $"{CultureInfo.CurrentCulture.TextInfo.ToTitleCase(format)}Writer";
-            var writerType = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetTypes())
-                .FirstOrDefault(t => typeof(IEnumWriter).IsAssignableFrom(t) && !t.IsInterface && t.Name.Equals(writerTypeName, StringComparison.OrdinalIgnoreCase));
-
-            if (writerType == null)
+            catch (Exception exception)
             {
-                return null;
+                _logger?.Error(exception);
             }
-
-            return (IEnumWriter)Activator.CreateInstance(writerType, new object[] { outputDir });
+            finally
+            {
+                LogManager.Shutdown();
+                Environment.Exit(0);
+            }
         }
     } 
 }
