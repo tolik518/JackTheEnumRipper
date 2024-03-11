@@ -9,7 +9,7 @@ namespace Serializer
     {
         public Format Format => Format.Ini;
 
-        public void Serialize()
+        public void Serialize(string path)
         {
             Console.WriteLine(this.Format);
         }

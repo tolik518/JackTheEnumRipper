@@ -9,7 +9,7 @@ namespace Serializer
     {
         public Format Format => Format.CSharp;
 
-        public void Serialize()
+        public void Serialize(string path)
         {
             Console.WriteLine(this.Format);
         }

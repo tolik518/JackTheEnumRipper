@@ -11,15 +11,18 @@ namespace JackTheEnumRipper.Services
     {
         private readonly ISerializerFactory _serializerFactory = serializerFactory;
 
-        public void Export(Format format)
+        public void Serialize(Format format, string path)
         {
             var serializer = this._serializerFactory.Create(format);
-            serializer?.Serialize();
+
+            ArgumentNullException.ThrowIfNull(serializer, nameof(serializer));
+
+            serializer.Serialize(path);
         }
 
         public IEnumerable<string> GetAvailableFormats()
         {
-            return this._serializerFactory.Serializers.Select(x => Enum.GetName(x.Format)!);
+            return this._serializerFactory.Serializers.Select(x => Enum.GetName(x.Format)?.ToLower()!);
         }
     }
 }

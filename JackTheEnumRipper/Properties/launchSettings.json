@@ -2,7 +2,7 @@
   "profiles": {
     "JackTheEnumRipper": {
       "commandName": "Project",
-      "commandLineArgs": "export --format ini"
+      "commandLineArgs": "export --path ./test.asm"
     }
   }
 }

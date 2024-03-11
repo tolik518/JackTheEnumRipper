@@ -72,7 +72,11 @@ namespace JackTheEnumRipper
                 {
                     exportCommand.Description = "provide one or more export format";
                     var listOption = exportCommand.Option("--list", "list all available export formats and exit", CommandOptionType.NoValue);
-                    var formatOption = exportCommand.Option("--format", "the name of a format writer", CommandOptionType.SingleValue);
+                    var pathOption = exportCommand.Option("-p|--path", "path to assembly", CommandOptionType.SingleValue);
+                    var formatOption = exportCommand.Option("--format", "the name of a format writer", CommandOptionType.SingleValue, option =>
+                    {
+                        option.DefaultValue = Enum.GetName(Format.CSharp)?.ToLower();
+                    });
 
                     exportCommand.OnExecute(() =>
                     {
@@ -84,7 +88,7 @@ namespace JackTheEnumRipper
                             Environment.Exit(0);
                         }
 
-                        if (formatOption.HasValue())
+                        if (pathOption.HasValue())
                         {
                             string? requestedFormat = formatOption.Value();
                             bool valid = Enum.TryParse(requestedFormat, ignoreCase: true, out Format format);
@@ -92,7 +96,8 @@ namespace JackTheEnumRipper
                             if (!valid) throw new ArgumentException("invalid format type", nameof(requestedFormat));
 
                             var serializerService = this._serviceProvider?.GetService<ISerializerService>();
-                            serializerService?.Export(format);
+                            serializerService?.Serialize(format, pathOption.Value()!);
+                            Environment.Exit(0);
                         }
                     });
                 });

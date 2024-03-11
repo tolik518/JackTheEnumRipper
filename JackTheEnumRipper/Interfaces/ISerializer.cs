@@ -6,6 +6,6 @@ namespace JackTheEnumRipper.Interfaces
     {
         public Format Format { get; }
 
-        public void Serialize();
+        public void Serialize(string path);
     }
 }
