@@ -43,6 +43,7 @@ namespace JackTheEnumRipper.Core
 
             services.AddSerializerFactory();
             services.AddSingleton<ISerializerService, SerializerService>();
+            services.AddSingleton<IExtractorService, ExtractorService>();
 
             return services;
         }
