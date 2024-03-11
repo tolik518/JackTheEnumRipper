@@ -1,16 +1,17 @@
 ﻿using System;
 
 using JackTheEnumRipper.Interfaces;
+using JackTheEnumRipper.Models;
 
 namespace Serializer
 {
     public class IniSerializer : ISerializer
     {
-        public string Name => "ini";
+        public Format Format => Format.Ini;
 
         public void Serialize()
         {
-            Console.WriteLine(this.Name);
+            Console.WriteLine(this.Format);
         }
     }
 }

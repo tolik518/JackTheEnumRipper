@@ -3,30 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 
 using JackTheEnumRipper.Interfaces;
+using JackTheEnumRipper.Models;
 
 namespace JackTheEnumRipper.Services
 {
-    public class SerializerService : ISerializerService
+    public class SerializerService(ISerializerFactory serializerFactory) : ISerializerService
     {
-        private readonly ISerializerFactory _serializerFactory;
+        private readonly ISerializerFactory _serializerFactory = serializerFactory;
 
-        public SerializerService(ISerializerFactory serializerFactory)
-        {
-            this._serializerFactory = serializerFactory;
-        }
-
-        public void Export(string format)
+        public void Export(Format format)
         {
             var serializer = this._serializerFactory.Create(format);
-
-            ArgumentNullException.ThrowIfNull(serializer, nameof(serializer));
-
-            serializer.Serialize();
+            serializer?.Serialize();
         }
 
         public IEnumerable<string> GetAvailableFormats()
         {
-            return this._serializerFactory.Serializers.Select(x => x.Name);
+            return this._serializerFactory.Serializers.Select(x => Enum.GetName(x.Format)!);
         }
     }
 }

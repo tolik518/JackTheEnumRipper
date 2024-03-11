@@ -2,6 +2,7 @@
 
 using JackTheEnumRipper.Core;
 using JackTheEnumRipper.Interfaces;
+using JackTheEnumRipper.Models;
 
 using McMaster.Extensions.CommandLineUtils;
 
@@ -27,7 +28,7 @@ namespace JackTheEnumRipper
 
         private readonly IConfigurationRoot? _configurationRoot;
 
-        Program()
+        public Program()
         {
             this._environment = new HostingEnvironment
             {
@@ -85,7 +86,10 @@ namespace JackTheEnumRipper
 
                         if (formatOption.HasValue())
                         {
-                            string format = formatOption.Value()!;
+                            string? requestedFormat = formatOption.Value();
+                            bool valid = Enum.TryParse(requestedFormat, ignoreCase: true, out Format format);
+
+                            if (!valid) throw new ArgumentException("invalid format type", nameof(requestedFormat));
 
                             var serializerService = this._serviceProvider?.GetService<ISerializerService>();
                             serializerService?.Export(format);
@@ -107,13 +111,10 @@ namespace JackTheEnumRipper
 
                 _ = cli.Execute(args);
             }
-            catch (ArgumentNullException)
-            {
-                Console.Error.WriteLine("invalid arguments");
-            }
             catch (Exception exception)
             {
                 _logger?.Error(exception);
+                Console.Error.WriteLine("invalid arguments");
             }
             finally
             {
@@ -121,5 +122,5 @@ namespace JackTheEnumRipper
                 Environment.Exit(0);
             }
         }
-    } 
+    }
 }

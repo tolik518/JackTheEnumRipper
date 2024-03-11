@@ -1,8 +1,10 @@
-﻿namespace JackTheEnumRipper.Interfaces
+﻿using JackTheEnumRipper.Models;
+
+namespace JackTheEnumRipper.Interfaces
 {
     public interface ISerializer
     {
-        public string Name { get; }
+        public Format Format { get; }
 
         public void Serialize();
     }

@@ -1,16 +1,17 @@
 ﻿using System;
 
 using JackTheEnumRipper.Interfaces;
+using JackTheEnumRipper.Models;
 
 namespace Serializer
 {
     public class PhpSerializer : ISerializer
     {
-        public string Name => "php";
+        public Format Format => Format.Php;
 
         public void Serialize()
         {
-            Console.WriteLine(this.Name);
+            Console.WriteLine(this.Format);
         }
     }
 }

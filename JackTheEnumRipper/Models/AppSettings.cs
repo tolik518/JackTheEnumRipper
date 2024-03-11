@@ -1,7 +1,7 @@
 ﻿namespace JackTheEnumRipper.Models
 {
-    public class AppSettings
+    public record AppSettings
     {
-        public string? Test { get; set; }
+        public required string Test { get; init; }
     }
 }

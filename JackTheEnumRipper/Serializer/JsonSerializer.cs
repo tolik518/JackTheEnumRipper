@@ -1,16 +1,17 @@
 ﻿using System;
 
 using JackTheEnumRipper.Interfaces;
+using JackTheEnumRipper.Models;
 
 namespace Serializer
 {
     public class JsonSerializer : ISerializer
     {
-        public string Name => "json";
+        public Format Format => Format.Json;
 
         public void Serialize()
         {
-            Console.WriteLine(this.Name);
+            Console.WriteLine(this.Format);
         }
     }
 }
