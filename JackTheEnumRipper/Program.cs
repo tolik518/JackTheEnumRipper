@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 using JackTheEnumRipper.Core;
 using JackTheEnumRipper.Interfaces;
@@ -95,8 +96,10 @@ namespace JackTheEnumRipper
 
                             if (!valid) throw new ArgumentException("invalid format type", nameof(requestedFormat));
 
+                            string filePath = Path.Join(Project.BasePath, $"enum{Utils.GetExtension(format)}");
+
                             var serializerService = this._serviceProvider?.GetService<ISerializerService>();
-                            serializerService?.Serialize(format, pathOption.Value()!);
+                            serializerService?.Serialize(format, pathOption.Value()!, filePath);
                             Environment.Exit(0);
                         }
                     });

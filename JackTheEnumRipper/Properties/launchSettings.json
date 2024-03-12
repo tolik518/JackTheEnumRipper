@@ -2,7 +2,7 @@
   "profiles": {
     "JackTheEnumRipper": {
       "commandName": "Project",
-      "commandLineArgs": "export --path /Microsoft.Extensions.Hosting.dll"
+      "commandLineArgs": "export --path .\\JackTheEnumRipper.dll --format json"
     }
   }
 }

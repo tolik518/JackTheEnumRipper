@@ -1,4 +1,6 @@
-﻿using JackTheEnumRipper.Models;
+﻿using System.Collections.Generic;
+
+using JackTheEnumRipper.Models;
 
 namespace JackTheEnumRipper.Interfaces
 {
@@ -6,6 +8,6 @@ namespace JackTheEnumRipper.Interfaces
     {
         public Format Format { get; }
 
-        public void Serialize(string path);
+        public void Serialize(IEnumerable<AbstractEnum> enums, string path);
     }
 }

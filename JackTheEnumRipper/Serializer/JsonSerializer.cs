@@ -1,7 +1,11 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
 using JackTheEnumRipper.Interfaces;
 using JackTheEnumRipper.Models;
+
+using Newtonsoft.Json;
 
 namespace Serializer
 {
@@ -9,9 +13,10 @@ namespace Serializer
     {
         public Format Format => Format.Json;
 
-        public void Serialize(string path)
+        public void Serialize(IEnumerable<AbstractEnum> enums, string path)
         {
-            Console.WriteLine(this.Format);
+            string json = JsonConvert.SerializeObject(enums, Formatting.Indented);
+            File.WriteAllText(path, json, encoding: Encoding.UTF8);
         }
     }
 }

@@ -28,7 +28,6 @@ namespace JackTheEnumRipper.Services
 
             var assemblyDefinition = AssemblyDefinition.ReadAssembly(fullPath);
 
-            // TODO
             var enums = assemblyDefinition.Modules
                 .SelectMany(x => x.Types)
                 .Where(x => x.IsEnum);

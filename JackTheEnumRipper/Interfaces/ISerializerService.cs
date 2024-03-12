@@ -6,7 +6,7 @@ namespace JackTheEnumRipper.Interfaces
 {
     public interface ISerializerService
     {
-        public void Serialize(Format format, string path);
+        public void Serialize(Format format, string assemblyPath, string filePath);
 
         public IEnumerable<string> GetAvailableFormats();
     }

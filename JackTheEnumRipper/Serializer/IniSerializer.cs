@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using JackTheEnumRipper.Interfaces;
 using JackTheEnumRipper.Models;
@@ -9,7 +10,7 @@ namespace Serializer
     {
         public Format Format => Format.Ini;
 
-        public void Serialize(string path)
+        public void Serialize(IEnumerable<AbstractEnum> enums, string path)
         {
             Console.WriteLine(this.Format);
         }
