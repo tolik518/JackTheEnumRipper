@@ -12,7 +12,7 @@ namespace Serializer
 
         public void Serialize(IEnumerable<AbstractEnum> enums, string path)
         {
-            Console.WriteLine(this.Format);
+            throw new NotImplementedException();
         }
     }
 }
