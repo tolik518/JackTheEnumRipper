@@ -14,6 +14,8 @@ namespace JackTheEnumRipper.Core
         {
             return types.Select(x => new AbstractEnum
             {
+                Namespace = x.Namespace,
+                Scope = x.IsPublic ? "public" : "private",
                 Name = x.Name,
                 Type = x.Fields.Select(y => y.FieldType.Name).First(),
                 Fields = x.Fields.Skip(1).Select(y => new AbstractField { Name = y.Name, Value = y.Constant })
