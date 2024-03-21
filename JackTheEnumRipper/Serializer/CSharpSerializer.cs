@@ -1,10 +1,10 @@
 ﻿using System;
+using System.CodeDom;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
-using JackTheEnumRipper.Core;
 using JackTheEnumRipper.Interfaces;
 using JackTheEnumRipper.Models;
 
@@ -14,40 +14,51 @@ namespace Serializer
     {
         public Format Format => Format.CSharp;
 
-        public void Serialize(IEnumerable<AbstractEnum> enums, string path)
+        private CodeCompileUnit GenerateEnumCode(IEnumerable<AbstractEnum> enums)
         {
-            StringBuilder builder = new();
-            string tab = " ".Repeat(4);
+            var compileUnit = new CodeCompileUnit();
 
             foreach (IGrouping<string, AbstractEnum> enumGroup in enums.GroupBy(x => x.Namespace))
             {
-                builder.AppendLine($"namespace {enumGroup.Key}");
-                builder.AppendLine("{");
-
                 using IEnumerator<AbstractEnum> enumerator = enumGroup.GetEnumerator();
-                bool last = !enumerator.MoveNext();
 
-                while (!last)
+                while (enumerator.MoveNext())
                 {
-                    AbstractEnum @enum = enumerator.Current;
-                    builder.AppendLine($"{tab}{@enum.Scope} enum {@enum.Name} : {@enum.Type}");
-                    builder.AppendLine($"{tab}{{");
+                    AbstractEnum abstractEnum = enumerator.Current;
+                    var @namespace = new CodeNamespace(abstractEnum.Namespace);
+                    @namespace.Imports.Add(new CodeNamespaceImport("System"));
 
-                    foreach (AbstractField field in @enum.Fields)
+                    var @enum = new CodeTypeDeclaration(abstractEnum.Name)
                     {
-                        builder.AppendLine($"{tab}{tab}{field.Name} = {field.Value},");
+                        IsEnum = true
+                    };
+
+                    @enum.Attributes |= abstractEnum.IsPublic ? MemberAttributes.Public : MemberAttributes.Private;
+
+                    foreach (AbstractField field in abstractEnum.Fields)
+                    {
+                        @enum.Members.Add(new CodeMemberField(abstractEnum.Type, field.Name)
+                        {
+                            InitExpression = new CodePrimitiveExpression(field.Value)
+                        });
                     }
 
-                    builder.AppendLine($"{tab}}}");
-                    last = !enumerator.MoveNext();
-                    if (!last) builder.AppendLine();
+                    @namespace.Types.Add(@enum);
+                    compileUnit.Namespaces.Add(@namespace);
                 }
-
-                builder.AppendLine("}");
             }
 
-            string code = builder.ToString();
-            File.WriteAllText(path, code, encoding: Encoding.UTF8);
+            return compileUnit;
+        }
+
+        public void Serialize(IEnumerable<AbstractEnum> enums, string path)
+        {
+            var provider = CodeDomProvider.CreateProvider(Enum.GetName(this.Format));
+            var codeCompileUnit = this.GenerateEnumCode(enums);
+
+            using StringWriter writer = new();
+            provider.GenerateCodeFromCompileUnit(codeCompileUnit, writer, new CodeGeneratorOptions());
+            File.WriteAllText(path, writer.ToString());
         }
     }
 }

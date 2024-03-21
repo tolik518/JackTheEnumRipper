@@ -10,7 +10,7 @@ namespace JackTheEnumRipper.Models
     {
         public required string Namespace { get; init; }
 
-        public required string Scope { get; init; }
+        public required bool IsPublic { get; init; }
 
         public required string Name { get; init; }
 
