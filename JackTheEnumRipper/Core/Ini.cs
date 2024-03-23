@@ -10,7 +10,7 @@ namespace JackTheEnumRipper.Core
     {
         #region Private Fields
 
-        private readonly List<Section> _sections = new List<Section>();
+        private readonly List<Section> _sections = [];
 
         #endregion
 
@@ -60,8 +60,7 @@ namespace JackTheEnumRipper.Core
 
             if (section == default) return false;
 
-            this._sections.Remove(section);
-            return true;
+            return this._sections.Remove(section);
         }
 
         public IEnumerable<string> GetSections()

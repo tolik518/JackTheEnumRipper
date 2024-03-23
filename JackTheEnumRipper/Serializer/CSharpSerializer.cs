@@ -54,9 +54,15 @@ namespace Serializer
         {
             var provider = CodeDomProvider.CreateProvider(Enum.GetName(this.Format));
             var codeCompileUnit = GenerateEnumCode(enums);
+            var options = new CodeGeneratorOptions
+            {
+                BracingStyle = "C",
+                BlankLinesBetweenMembers = false,
+                IndentString = "    "
+            };
 
             using StringWriter writer = new();
-            provider.GenerateCodeFromCompileUnit(codeCompileUnit, writer, null);
+            provider.GenerateCodeFromCompileUnit(codeCompileUnit, writer, options);
             File.WriteAllText(path, writer.ToString());
         }
     }

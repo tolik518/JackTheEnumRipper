@@ -28,11 +28,9 @@ namespace JackTheEnumRipper.Services
 
             var assemblyDefinition = AssemblyDefinition.ReadAssembly(fullPath);
 
-            var enums = assemblyDefinition.Modules
+            return assemblyDefinition.Modules
                 .SelectMany(x => x.Types)
                 .Where(x => x.IsEnum);
-
-            return enums;
         }
     }
 }
