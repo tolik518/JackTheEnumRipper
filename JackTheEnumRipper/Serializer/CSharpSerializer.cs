@@ -14,7 +14,7 @@ namespace Serializer
     {
         public Format Format => Format.CSharp;
 
-        private CodeCompileUnit GenerateEnumCode(IEnumerable<AbstractEnum> enums)
+        private static CodeCompileUnit GenerateEnumCode(IEnumerable<AbstractEnum> enums)
         {
             var compileUnit = new CodeCompileUnit();
 
@@ -26,14 +26,13 @@ namespace Serializer
                 {
                     AbstractEnum abstractEnum = enumerator.Current;
                     var @namespace = new CodeNamespace(abstractEnum.Namespace);
-                    @namespace.Imports.Add(new CodeNamespaceImport("System"));
 
                     var @enum = new CodeTypeDeclaration(abstractEnum.Name)
                     {
                         IsEnum = true
                     };
 
-                    @enum.Attributes |= abstractEnum.IsPublic ? MemberAttributes.Public : MemberAttributes.Private;
+                    @enum.Attributes |= abstractEnum.IsPublic ? MemberAttributes.Public : MemberAttributes.Assembly;
 
                     foreach (AbstractField field in abstractEnum.Fields)
                     {
@@ -54,10 +53,10 @@ namespace Serializer
         public void Serialize(IEnumerable<AbstractEnum> enums, string path)
         {
             var provider = CodeDomProvider.CreateProvider(Enum.GetName(this.Format));
-            var codeCompileUnit = this.GenerateEnumCode(enums);
+            var codeCompileUnit = GenerateEnumCode(enums);
 
             using StringWriter writer = new();
-            provider.GenerateCodeFromCompileUnit(codeCompileUnit, writer, new CodeGeneratorOptions());
+            provider.GenerateCodeFromCompileUnit(codeCompileUnit, writer, null);
             File.WriteAllText(path, writer.ToString());
         }
     }
