@@ -2,29 +2,10 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using JackTheEnumRipper.Models;
 
 namespace JackTheEnumRipper.Core
 {
-    public readonly record struct Setting
-    {
-        public string Comment { get; init; }
-
-        public required string Name { get; init; }
-
-        public required object Value { get; init; }
-    }
-
-    public readonly record struct Section
-    {
-        public string Comment { get; init; }
-
-        public required string Name { get; init; }
-
-        public required IEnumerable<Setting> Settings { get; init; }
-
-        public bool IsGlobal { get; init; }
-    }
-
     public class Ini
     {
         #region Private Fields
