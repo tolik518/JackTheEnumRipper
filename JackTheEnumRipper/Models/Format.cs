@@ -6,6 +6,7 @@
         Ini,
         Json,
         Php,
-        Rust
+        Rust,
+        Python
     }
 }

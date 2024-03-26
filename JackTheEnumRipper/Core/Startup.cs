@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 using JackTheEnumRipper.Factories;
 using JackTheEnumRipper.Interfaces;
 using JackTheEnumRipper.Models;
+using JackTheEnumRipper.Serializer;
 using JackTheEnumRipper.Services;
 
 using Microsoft.Extensions.Configuration;
@@ -15,7 +17,7 @@ using NLog.Extensions.Logging;
 
 using Serializer;
 
-using LogLevel = Microsoft.Extensions.Logging.LogLevel;
+using JsonSerializer = Serializer.JsonSerializer;
 
 namespace JackTheEnumRipper.Core
 {
@@ -32,7 +34,20 @@ namespace JackTheEnumRipper.Core
         public static IServiceCollection ConfigureAppServices(this IServiceCollection services, IHostEnvironment envionment, IConfigurationRoot configurationRoot)
         {
             services.AddSingleton(envionment);
-            services.Configure<AppSettings>(configurationRoot.GetSection(nameof(AppSettings)));
+
+            services
+                .AddOptions<AppSettings>()
+                .Bind(configurationRoot.GetRequiredSection(nameof(AppSettings)))
+                .Validate(option =>
+                {
+                    if (!Encoding.Default.IsValidEncoding(option.Encoding))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                })
+                .ValidateOnStart();
 
             services.AddLogging(logBuilder =>
             {
@@ -55,6 +70,7 @@ namespace JackTheEnumRipper.Core
             services.AddTransient<ISerializer, JsonSerializer>();
             services.AddTransient<ISerializer, PhpSerializer>();
             services.AddTransient<ISerializer, RustSerializer>();
+            services.AddTransient<ISerializer, PythonSerializer>();
 
             services.AddSingleton<Func<IEnumerable<ISerializer>>>(x => () => x.GetService<IEnumerable<ISerializer>>()!);
 

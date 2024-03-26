@@ -31,6 +31,7 @@ namespace JackTheEnumRipper.Core
                 Format.Json => ".json",
                 Format.Php => ".php",
                 Format.Rust => ".rs",
+                Format.Python => ".py",
                 _ => throw new NotImplementedException(),
             };
         }

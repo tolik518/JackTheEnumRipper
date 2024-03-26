@@ -4,15 +4,20 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 using JackTheEnumRipper.Interfaces;
 using JackTheEnumRipper.Models;
 
+using Microsoft.Extensions.Options;
+
 namespace Serializer
 {
-    public class CSharpSerializer : ISerializer
+    public class CSharpSerializer(IOptions<AppSettings> appSettings) : ISerializer
     {
         public Format Format => Format.CSharp;
+
+        private readonly AppSettings _appSettings = appSettings.Value;
 
         private static CodeCompileUnit GenerateEnumCode(IEnumerable<AbstractEnum> enums)
         {
@@ -62,8 +67,9 @@ namespace Serializer
             };
 
             using StringWriter writer = new();
+            var encoding = Encoding.GetEncoding(this._appSettings.Encoding);
             provider.GenerateCodeFromCompileUnit(codeCompileUnit, writer, options);
-            File.WriteAllText(path, writer.ToString());
+            File.WriteAllText(path, writer.ToString(), encoding);
         }
     }
 }

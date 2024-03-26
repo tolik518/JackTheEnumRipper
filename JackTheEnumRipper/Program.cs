@@ -74,7 +74,7 @@ namespace JackTheEnumRipper
                     exportCommand.Description = "provide one or more export format";
                     var listOption = exportCommand.Option("--list", "list all available export formats and exit", CommandOptionType.NoValue);
                     var pathOption = exportCommand.Option("-p|--path", "path to assembly", CommandOptionType.SingleValue);
-                    var formatOption = exportCommand.Option("--format", "the name of a format writer", CommandOptionType.SingleValue, option =>
+                    var formatOption = exportCommand.Option("-f|--format", "the name of a format writer", CommandOptionType.SingleValue, option =>
                     {
                         option.DefaultValue = Enum.GetName(Format.CSharp)?.ToLower();
                     });
