@@ -2,7 +2,7 @@
   "profiles": {
     "JackTheEnumRipper": {
       "commandName": "Project",
-      "commandLineArgs": "--help"
+      "commandLineArgs": "export --path .\\JackTheEnumRipper.dll --format csharp"
     }
   }
 }

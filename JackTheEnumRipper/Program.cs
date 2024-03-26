@@ -1,142 +1,134 @@
-﻿using Mono.Cecil;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System;
 using System.IO;
-using System.Linq;
 
-class Program
+using JackTheEnumRipper.Core;
+using JackTheEnumRipper.Interfaces;
+using JackTheEnumRipper.Models;
+
+using McMaster.Extensions.CommandLineUtils;
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
+
+using NLog;
+using NLog.Extensions.Logging;
+
+using ILogger = NLog.Logger;
+
+namespace JackTheEnumRipper
 {
-    private static string version = "1.1.0";
-    static void Main(string[] args)
+    public class Program
     {
-        // print the version and exit - could be useful when using with other tools
-        if (args.Length == 1 && (args[0] == "--version" || args[0] == "-v"))
+        private readonly ILogger? _logger;
+
+        private readonly IHostEnvironment _environment;
+
+        private readonly IServiceProvider? _serviceProvider;
+
+        private readonly IConfigurationRoot? _configurationRoot;
+
+        public Program()
         {
-            Console.WriteLine(version);
-            return;
-        }
-
-        // print the supported formats and exit, also useful when using with other tools
-        if (args.Length == 1 && (args[0] == "--formats" || args[0] == "-f"))
-        {
-            Console.WriteLine(GetAvailableWritersAsString(prefix: false));
-            return;
-        }
-
-        Console.Title = $"JackTheEnumRipper v{version}";
-        PrintBanner();
-
-        if (args.Length == 0 || args.Contains("--help") || args.Contains("-h"))
-        {
-            Console.WriteLine("Usage: JackTheEnumRipper <assembly> <format>");
-            Console.WriteLine("  <format>: The output format. Supported formats: " + GetAvailableWritersAsString(prefix: true));
-            Console.ReadLine();
-            return;
-        }
-
-        string assemblyPath = args[0];
-        if (!File.Exists(assemblyPath))
-        {
-            Console.WriteLine($"File not found: {assemblyPath}");
-            return;
-        }
-
-        string formatArg = args.Length > 1 ? args[1] : "--csharp"; // Default to csharp if no format is provided
-        if (!formatArg.StartsWith("--"))
-        {
-            Console.WriteLine("Invalid format. Use --format. Example: --csharp");
-            return;
-        }
-
-        string format = formatArg.Substring(2).ToLower();
-        ReadAssemblyAndExtractEnums(format, assemblyPath);
-    }
-
-    private static void ReadAssemblyAndExtractEnums(string format, string assemblyPath)
-    {
-        try
-        {
-            var assembly = AssemblyDefinition.ReadAssembly(assemblyPath);
-            var outputDir = Path.Combine(
-                Path.GetDirectoryName(assemblyPath),
-                $"Enums.{assembly.Name.Name}"
-            );
-            Directory.CreateDirectory(outputDir);
-
-            var writer = GetWriterForFormat(format, outputDir);
-            if (writer == null)
+            this._environment = new HostingEnvironment
             {
-                Console.WriteLine($"No writer found for format: {format}");
-                Console.ReadLine();
-                return;
+                ApplicationName = Project.Name,
+                EnvironmentName = Project.CompileTimeEnvironment,
+                ContentRootPath = Project.BasePath
+            };
+
+            this._configurationRoot = new ConfigurationBuilder()
+                .ConfigureAppBuilder(this._environment)
+                .Build();
+
+            this._serviceProvider = new ServiceCollection()
+                .ConfigureAppServices(this._environment, this._configurationRoot)
+                .BuildServiceProvider();
+
+            LogManager.Configuration = new NLogLoggingConfiguration(this._configurationRoot.GetSection("NLog"));
+            this._logger = LogManager.GetCurrentClassLogger();
+        }
+
+        public static void Main(string[] args)
+        {
+            var app = new Program();
+            app.Run(args);
+        }
+
+        public void Run(string[] args)
+        {
+            try
+            {
+                var cli = new CommandLineApplication
+                {
+                    Name = Project.Name,
+                    Description = Project.Description,
+                };
+
+                cli.HelpOption(inherited: true);
+                var version = cli.Option("-v|--version", "display program version and exit", CommandOptionType.NoValue);
+
+                cli.Command("export", exportCommand =>
+                {
+                    exportCommand.Description = "provide one or more export format";
+                    var listOption = exportCommand.Option("--list", "list all available export formats and exit", CommandOptionType.NoValue);
+                    var pathOption = exportCommand.Option("-p|--path", "path to assembly", CommandOptionType.SingleValue);
+                    var formatOption = exportCommand.Option("-f|--format", "the name of a format writer", CommandOptionType.SingleValue, option =>
+                    {
+                        option.DefaultValue = Enum.GetName(Format.CSharp)?.ToLower();
+                    });
+
+                    exportCommand.OnExecute(() =>
+                    {
+                        if (listOption.HasValue())
+                        {
+                            var serializerService = this._serviceProvider?.GetService<ISerializerService>();
+                            var availableFormats = serializerService?.GetAvailableFormats();
+                            Console.WriteLine(string.Join(",", availableFormats!));
+                            Environment.Exit(0);
+                        }
+
+                        if (pathOption.HasValue())
+                        {
+                            string? requestedFormat = formatOption.Value();
+                            bool valid = Enum.TryParse(requestedFormat, ignoreCase: true, out Format format);
+
+                            if (!valid) throw new ArgumentException("invalid format type", nameof(requestedFormat));
+
+                            string filePath = Path.Join(Project.BasePath, $"enum{Utils.GetExtension(format)}");
+
+                            var serializerService = this._serviceProvider?.GetService<ISerializerService>();
+                            serializerService?.Serialize(format, pathOption.Value()!, filePath);
+                            Environment.Exit(0);
+                        }
+                    });
+                });
+
+                cli.OnExecute(() =>
+                {
+                    if (version.HasValue())
+                    {
+                        Console.WriteLine($"{cli.Name}, version {Project.Version}");
+                    }
+                    else
+                    {
+                        cli.ShowHelp();
+                    }
+                });
+
+                _ = cli.Execute(args);
             }
-
-            var ripper = new EnumRipper(writer);
-            ripper.ExtractEnumsFromAssembly(outputDir, assemblyPath);
-            Console.WriteLine($"Output directory: \"{outputDir}\"");
-            Console.WriteLine("Operation completed");
-            Console.ReadLine();
+            catch (Exception exception)
+            {
+                _logger?.Error(exception);
+                Console.Error.WriteLine("invalid arguments");
+            }
+            finally
+            {
+                LogManager.Shutdown();
+                Environment.Exit(0);
+            }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"No access to given file or the file is not written using .Net");
-            Console.WriteLine($"{ex.GetType()}: {ex.Message}");
-            Console.ReadLine();
-        }
-    }
-
-    private static IEnumWriter GetWriterForFormat(string format, string outputDir)
-    {
-        var writerTypeName = $"{CultureInfo.CurrentCulture.TextInfo.ToTitleCase(format)}Writer";
-        var writerType = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(a => a.GetTypes())
-            .FirstOrDefault(t => typeof(IEnumWriter).IsAssignableFrom(t) && !t.IsInterface && t.Name.Equals(writerTypeName, StringComparison.OrdinalIgnoreCase));
-
-        if (writerType == null)
-        {
-            return null;
-        }
-
-        return (IEnumWriter)Activator.CreateInstance(writerType, new object[] { outputDir });
-    }
-
-    private static IEnumerable<string> GetAvailableWriters()
-    {
-        return AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(a => a.GetTypes())
-            .Where(t => typeof(IEnumWriter).IsAssignableFrom(t) && !t.IsInterface)
-            .Select(t => t.Name.Replace("Writer", "").ToLower());
-    }
-
-    private static string GetAvailableWritersAsString(bool prefix)
-    {
-        if (prefix)
-
-        {
-            return string.Join(", ", GetAvailableWriters().Select(f => $"--{f}"));
-        }
-        return string.Join(", ", GetAvailableWriters());
-    }
-
-
-    private static void PrintBanner()
-    {
-        Console.WriteLine("                                                                                ");
-        Console.WriteLine("   ▄██▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀██▄  ");
-        Console.WriteLine("   █▀                                                                       ▀█  ");
-        Console.WriteLine("   █      ▀███   ▄       ▄▄   ██   ▄    T   ▄██▀▀▀▀ █▄   ██ ██ ▐█ ██▄   ▄██  █  ");
-        Console.WriteLine("   █       ██▌ ▄█▀█▄  ▄███▀█▄ ██▄██▀    H   ███▄▄▄  ███▄ ██ ██ ▐█ ████▄████  █  ");
-        Console.WriteLine("   █   ▄▄  ██▌▄█████▄ ███▄    ██▀█▄     E   ███▀▀   ██▌▀███ ██▄▐█ ███ ██ ██  █  ");
-        Console.WriteLine("   █  ███▄███▌█▀  ▀█▀  ▀████▀ ▀█ ▀██        ▀██████ ██▌  ▀█ ▀███▀ ██▀    ██  █  ");
-        Console.WriteLine("   █   ▀▀▀▀▀▀      ▄▄▄▄▄▄      ▄▄▄▄▄▄   ▄▄▄▄▄▄   ▄▄▄▄▄▄▄  ▄▄▄▄▄▄             █  ");
-        Console.WriteLine("   █              ███▀▀███ ▄▄ ███▀▀███ ███▀▀███ ████▀▀▀  ███▀▀███            █  ");
-        Console.WriteLine("   █              ███ ▄█▀   ▌ ███▄▄██▀ ███▄▄██▀ ██████▀  ███ ▄█▀             █  ");
-        Console.WriteLine("   █              ███▀▀██▄ ██ ███▀▀    ███▀▀    ███▌     ███▀▀██▄            █  ");
-        Console.WriteLine("   █        ▄▄     ▀█  █▀▀▄█▀▄███▄    ▄███▄    ▄████████▄▀██▌  █▀   ▄▄       █  ");
-        Console.WriteLine("   █       ████▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄████      █  ");
-        Console.WriteLine("   ██▄      ▀▀                                                      ▀▀     ▄██  ");
-        Console.WriteLine("    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀   ");
-        Console.WriteLine("                                                                                ");
     }
 }
